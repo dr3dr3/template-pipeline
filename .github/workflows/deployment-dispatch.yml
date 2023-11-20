@@ -1,0 +1,75 @@
+name: DEPLOYMENT-DISPATCH
+run-name: Continuous Deployment Dispatch
+
+on:
+
+  workflow_call:
+    inputs:
+      blue-green:
+        required: true
+        type: string
+        default: 'blue'
+        # string must be one of:
+        # 'blue' - Blue Environment
+        # 'green' - Green Environment
+      target-repo:
+        required: true
+        type: string
+
+permissions:
+  contents: none
+    
+jobs:
+
+  # blocked:
+  #   name: Check if deployments blocked for the environment
+  #   outputs:
+  #     check: ${{ steps.results.outputs.COUNT }}
+  #   runs-on: ubuntu-latest
+  #   timeout-minutes: 10
+  #   env:
+  #     GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+  #   steps:
+  #     - name: GraphQL
+  #       uses: octokit/graphql-action@v2.x
+  #       id: block
+  #       with:
+  #         owner: 'dr3dr3'
+  #         repo: ${{ format('{0}-{1}', 'devops-demo', inputs.target-deploy) }}
+  #         labels: 'status-deploy-paused'
+  #         query: |
+  #           query release($owner:String!,$repo:String!,$labels:[String!]) {
+  #             repository(owner:$owner,name:$repo) {
+  #               issues(states:OPEN, labels:$labels) {
+  #                 totalCount
+  #               }
+  #             }
+  #           }
+
+  #     - name: Results
+  #       id: results
+  #       run: |
+  #         count="${{ fromJSON(steps.block.outputs.data).repository.issues.totalCount }}"
+  #         echo "COUNT=$count" >> $GITHUB_OUTPUT
+
+  # Dispatch send to trigger deployment
+  dispatcher:
+    name: 📨 Dispatch
+    # needs: [blocked]
+    # if: ${{ needs.blocked.outputs.check == 0 }}
+    timeout-minutes: 10
+    runs-on: ubuntu-latest
+    permissions:
+      contents: none
+
+    steps:
+
+      - name: Dispatch
+        run: |
+          curl -H "Accept: application/vnd.github.everest-preview+json" \
+          -H "Authorization: token ${{ secrets.GHA_PAT }}" \
+          --request POST --data '{"event_type": "deploy", "client_payload": {"blue-green": "${{ inputs.blue-green }}"}}' \
+          https://api.github.com/repos/${{ inputs.target-repo }}/dispatches
+          echo "Success"
+      
+      ### Todo: Any value in adding client_payload

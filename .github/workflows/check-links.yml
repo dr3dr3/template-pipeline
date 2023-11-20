@@ -1,0 +1,59 @@
+# NOTE: Must use this in same workflow as artefact upload
+name: CHECK-LINKS
+
+on:
+  workflow_call:
+    inputs:
+      artefact-ref:
+        required: true
+        type: string
+
+permissions:
+  contents: read
+
+jobs:
+
+  check-links:
+    name: Checking Links 🔗
+    timeout-minutes: 10
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+    steps:
+
+      - name: Checkout
+        uses: actions/checkout@v3
+
+      - name: Download build artifacts
+        uses: actions/download-artifact@v3
+        with:
+          name: ${{ inputs.artefact-ref }}
+          path: _site
+
+      - name: Setup Node.JS
+        uses: actions/setup-node@v3
+        with:
+          node-version: 18
+
+      # https://github.com/JustinBeckwith/linkinator
+      - name: Install Linkinator
+        run: |
+          npm install linkinator
+
+      - name: Check links 
+        id: check-links
+        if: ${{ vars.CHECK_LINKS == 'true' }}
+        run: |
+          echo "### Linkinator" >> $GITHUB_STEP_SUMMARY
+          cd _site
+          npx linkinator "**/*.html" --config "../config/linkinator.config.json"
+          echo $(npx linkinator "**/*.html" --config "../config/linkinator.config.json") >> $GITHUB_STEP_SUMMARY
+          echo "Done: GitHub Step Summary"
+          echo $(npx linkinator "**/*.html" --config "../config/linkinator.config.json") >> links-html.json
+          echo "Done: Create links-html.json"
+          echo 'RESULT='$(jq '.passed' links-html.json) >> $GITHUB_OUTPUT
+          echo "Done: Set HTML variable"
+
+      - name: Fail workflow
+        if: ${{ steps.check-links.outputs.RESULT != 'true' && vars.CHECK_LINKS == 'true' }}
+        run: exit 1

@@ -1,0 +1,94 @@
+name: BUILD-REVEALMD
+
+on:
+  workflow_call:
+    inputs:
+      target-ref:
+        required: true
+        type: string
+      artefact-ref:
+        required: true
+        type: string
+      feature:
+        required: true
+        type: string
+      solution:
+          required: true
+          type: string 
+
+permissions:
+  contents: read
+      
+jobs:
+
+  # Build static sites
+  build-static-site:
+    name: 🔨 Build
+    timeout-minutes: 10
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+
+    steps:
+
+      - name: Checkout Soln Repo
+        uses: actions/checkout@v3
+        with:
+          ref: ${{ inputs.target-ref }}
+
+      - name: Setup Node.JS
+        uses: actions/setup-node@v3
+        with:
+          node-version: 18
+
+      # All static solutions should use package.json and have lint, test, build as commands
+      - name: Install
+        run: npm install
+
+      - name: Add version and build date for Reveal-MD
+        if: ${{ inputs.solution == 'REVEALMD' }}
+        run: |
+          echo -e "${{ inputs.artefact-ref }} \n" >> slides/version.md
+
+      - name: Update BUILD-PLACEHOLDER
+        if: inputs.solution == 'landing'
+        run: sed -i 's/BUILD-PLACEHOLDER/${{ inputs.artefact-ref }}/g' src/App.js
+
+      - name: Update COMMIT-MESSAGE-PLACEHOLDER
+        if: inputs.solution == 'landing'
+        run: sed -i 's/COMMIT-MESSAGE-PLACEHOLDER/${{ inputs.feature }}/g' src/latestChange.js
+
+      # If linting fails will fail this job
+      - name: Run linter 
+        run: npm run lint
+
+      # If this tests fail the NPM error will fail this job
+      - name: Run tests 
+        if: inputs.solution != 'LANDING'
+        run: |
+          npm run test
+          echo "### Test Summary" >> $GITHUB_STEP_SUMMARY
+          echo "$(npm run test)" >> $GITHUB_STEP_SUMMARY
+
+      - name: 🔨 Run build
+        run: npm run build
+
+      - name: Export command needed for Featurevisor
+        if: inputs.solution == 'FEATUREVISOR'
+        run: npm run export
+
+      - name: Copy build output to _site folder (Landing)
+        if: inputs.solution == 'LANDING'
+        run: rsync -avh build/ _site
+
+      - name: Copy build output to _site folder (Featurevisor)
+        if: inputs.solution == 'FEATUREVISOR'
+        run: rsync -avh out/ _site
+
+      - name: Upload Build Artifacts
+        uses: actions/upload-artifact@v3
+        with:
+          name: ${{ inputs.artefact-ref }}
+          # Output of build should be in _site folder
+          path: _site
+          retention-days: 1

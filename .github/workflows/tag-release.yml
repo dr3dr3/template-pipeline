@@ -1,0 +1,49 @@
+# Add release and tag in GitHub for commits on Main
+name: TAG-RELEASE
+
+on:
+  workflow_call:
+    inputs:
+      tag:
+        required: true
+        type: string
+      target-ref:
+        required: true
+        type: string
+      feature:
+        required: true
+        type: string
+
+permissions:
+  contents: write
+        
+jobs:
+  tag-release:
+    name: Release
+    timeout-minutes: 10
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write
+    steps:
+
+      - name: Checkout Soln Repo
+        uses: actions/checkout@v3
+        with:
+          ref: ${{ inputs.target-ref }}
+
+      - name: Download Build Artefacts
+        # Note: Need to use this in same workflow that created the artefacts
+        uses: actions/download-artifact@v3
+        with:
+          name: ${{ inputs.tag }}
+          path: _site
+
+      - name: Bundle Artefacts
+        run: tar -cvzf build.tar.gz _site
+      
+      - name: Do GitHub Release
+        run: gh release create "${{ inputs.tag }}" "./build.tar.gz#Build-Artefact" --target "${{ inputs.target-ref }}" --title "${{ inputs.tag }}" --notes "${{ inputs.feature }}"
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+
+      ### ADD: Get release notes from related issue (if issue ID in commit message) and put into body of release

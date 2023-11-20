@@ -1,0 +1,148 @@
+# Deploy static site to configured host
+name: DEPLOY-STATIC-SITE
+
+on:
+  workflow_call:
+    inputs:
+      artefact-ref:
+        required: true
+        type: string
+      deploy-to:
+        required: true
+        type: string 
+      site-url:
+        required: false
+        type: string
+
+# Sets permissions of the GITHUB_TOKEN to allow deployment to GitHub Pages
+permissions:
+  contents: read
+  pages: write
+  id-token: write
+
+# Allow one concurrent deployment
+concurrency:
+  group: 'pages'
+  cancel-in-progress: false
+
+jobs:
+
+  echo:
+    name: Picking SS Host
+    timeout-minutes: 10
+    runs-on: ubuntu-latest
+    permissions:
+      contents: none
+    
+    steps:
+
+      - name: Echo
+        run: echo "Starting deploy to ${{ inputs.deploy-to }} for ${{ inputs.site-url }}"
+
+  deploy-ghp:
+    name: 🚀 GHP
+    if: inputs.deploy-to == 'GITHUB-PAGES'
+    environment:
+      # Ignore lint error regarding name value below. It should be github-pages
+      name: 'github-pages'
+      url: ${{ steps.deployment.outputs.page_url }}
+    outputs:
+      url: ${{ steps.deployment.outputs.page_url }}
+    timeout-minutes: 10
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write
+      pages: write
+      id-token: write
+    steps:
+
+      - name: Download build artifacts
+        uses: actions/download-artifact@v3
+        with:
+          name: ${{ inputs.artefact-ref }}
+          path: _site
+
+      - name: Upload Pages artifacts
+        uses: actions/upload-pages-artifact@v1
+        with:
+          path: _site/
+          
+      - name: Setup Pages
+        uses: actions/configure-pages@v3
+
+      - name: Deploy to GitHub Pages 🚀
+        id: deployment
+        uses: actions/deploy-pages@v1
+
+      - name: Summary
+        run: |
+          echo "### Deploy complete! :green_apple:" >> $GITHUB_STEP_SUMMARY
+          echo "${{ steps.deployment.outputs.page_url }}" >> $GITHUB_STEP_SUMMARY
+
+  deploy-surge:
+    name: 🚀 Surge.sh
+    if: ${{ inputs.deploy-to == 'SURGE' && inputs.site-url != '' }}
+    timeout-minutes: 10
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+
+    steps:
+
+      - uses: actions/setup-node@v3
+        with:
+          node-version: 18
+
+      - name: Install Surge.SH CLI
+        run: npm install surge
+
+      - name: Download build artifacts
+        uses: actions/download-artifact@v3
+        with:
+          name: ${{ inputs.artefact-ref }}
+          path: _site
+
+      - name: Upload to Surge.SH
+        run: npx surge ./_site --domain ${{ inputs.site-url }} --token ${{ secrets.SURGE_TOKEN }}
+
+      - name: Summary
+        run: |
+          echo "### Deploy complete! :green_apple:" >> $GITHUB_STEP_SUMMARY
+          echo "Deployed to Surge.SH here: https://${{ inputs.site-url }}" >> $GITHUB_STEP_SUMMARY
+
+  deploy-vercel:
+    name: 🚀 Vercel
+    if: inputs.deploy-to == 'VERCEL'
+    timeout-minutes: 10
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+    env:
+      VERCEL_ORG_ID: ${{ secrets.VERCEL_ORG_ID }}
+      VERCEL_PROJECT_ID: ${{ secrets.VERCEL_PROJECT_ID }}    
+    steps:
+
+      - uses: actions/setup-node@v3
+        with:
+          node-version: 18
+
+      - name: Install Vercel CLI
+        run: npm install vercel@latest
+
+      - name: Download build artifacts
+        uses: actions/download-artifact@v3
+        with:
+          name: ${{ inputs.artefact-ref }}
+          path: _site
+      
+      - name: Change Dir
+        run: cd _site
+
+      - name: Vercel Pull
+        run: npx vercel pull --yes --environment=production --token=${{ secrets.VERCEL_TOKEN }}
+
+      - name: Vercel Build
+        run: npx vercel build --prod --token=${{ secrets.VERCEL_TOKEN }}
+
+      - name: Vercel Deploy
+        run: npx vercel deploy --prebuilt --prod --token=${{ secrets.VERCEL_TOKEN }}

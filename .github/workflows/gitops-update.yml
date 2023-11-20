@@ -1,0 +1,67 @@
+# Update config held in GitOps Repository
+name: GITOPS-UPDATE
+run-name: GitOps Configuration Update by ${{ github.actor }}
+
+on:
+  workflow_call:
+    inputs:
+      config-item:
+        required: true
+        type: string
+      config-value:
+        required: true
+        type: string
+
+  workflow_dispatch:
+    inputs:
+      config-item:
+        description: Configuration Item
+        required: true
+        type: string
+      config-value:
+        description: Configuration Value
+        required: true
+        type: string
+
+permissions:
+  contents: write
+    
+jobs:
+  update-config:
+    name: Update GitOps Config
+    timeout-minutes: 10
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write
+
+    steps:
+
+      - name: Checkout GitOps
+        uses: actions/checkout@v3
+        with:
+          repository: ${{ vars.REPO_GITOPS }}
+          ref: 'main'
+          token: ${{ secrets.GHA_PAT }}
+
+      ### Only allow changes on specific nodes (the 'if' statements below)
+
+      - name: Update config of build for continuous integration
+        if: ${{ startsWith( inputs.config-item, '.build.' ) }} 
+        run: yq -i '${{ inputs.config-item }} = "${{ inputs.config-value }}"' builds.yml
+
+      - name: Update config of build for continuous delivery
+        if: ${{ startsWith( inputs.config-item, '.deploy.' ) }} 
+        run: yq -i '${{ inputs.config-item }} = "${{ inputs.config-value }}"' builds.yml
+
+      - name: Manual update config by dr3dr3
+        if: ${{ github.actor == 'dr3dr3' }} 
+        run: yq -i '${{ inputs.config-item }} = "${{ inputs.config-value }}"' builds.yml
+
+      - name: Commit Changes
+        if: ${{ success() }}
+        run: |
+          git config user.name github-actions
+          git config user.email github-actions@github.com
+          git add builds.yml
+          git commit -m "Updated builds.yml for ${{ inputs.config-item }} to value ${{ inputs.config-value }} by ${{ github.actor }}"
+          git push

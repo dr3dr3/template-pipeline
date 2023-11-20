@@ -1,0 +1,183 @@
+name: CONTINUOUS-INTEGRATION
+
+on:
+
+  # Called from solution repos
+  workflow_call:
+    inputs:
+      feature:
+        required: true
+        type: string
+      target-ref:
+        required: true
+        type: string
+      solution:
+        required: true
+        type: string 
+
+permissions:
+  contents: write
+  pages: write
+  id-token: write
+
+jobs:
+
+  set-tag:
+    name: 🔖 Set Tag
+    timeout-minutes: 10
+    runs-on: ubuntu-latest
+    permissions:
+      contents: none
+    outputs:
+      tag: ${{ steps.setoutput.outputs.TAG }}
+    steps:
+      
+    - name: Output Tag
+      id: setoutput
+      run: |
+        build="BUILD-$(date '+%Y.%m.%d.%H.%M')" || 'ERROR'
+        echo "$build"
+        echo "TAG=$build" >> $GITHUB_OUTPUT          
+
+  # Build for specific solution
+  build:
+    name: 🔨 Build
+    needs: [set-tag]
+    uses: ./.github/workflows/build.yml
+    permissions:
+      contents: read
+    secrets: inherit
+    with: 
+      target-ref: ${{ inputs.target-ref }}
+      artefact-ref: ${{ needs.set-tag.outputs.tag }}
+      feature: ${{ inputs.feature }}
+      solution: ${{ inputs.solution }}
+
+  ### Pre-deployment tests on the package from build above
+
+  # Test for broken hyperlinks
+  check-links:
+    name: 🔗 Check Links
+    needs: [set-tag, build]
+    uses: ./.github/workflows/check-links.yml
+    permissions:
+      contents: read
+    with: 
+      artefact-ref: ${{ needs.set-tag.outputs.tag }}
+
+  ### Check builds ok. Is a required check on the PR (setup in GitHub). 
+
+  build-complete:
+    name: 👍 Build
+    needs: [build, check-links] 
+    runs-on: ubuntu-latest 
+    permissions:
+      contents: none
+    steps:
+      - name: Ready message
+        run: echo "### Builds Completed :thumbsup:" >> $GITHUB_STEP_SUMMARY
+
+  build-failed:
+    name: 👎 Build
+    needs: [build, check-links] 
+    if: always() && ( contains(needs.*.result, 'failure') || contains(needs.*.result, 'cancelled') )
+    runs-on: ubuntu-latest 
+    permissions:
+      contents: none
+    steps:
+      - name: Ready message
+        run: echo "### Builds Failed :thumbsdown:" >> $GITHUB_STEP_SUMMARY
+
+  # Tag the release
+  tag-release:
+    name: 🚀 Tag and Release
+    if: ${{ github.event_name == 'push' }}
+    needs: [set-tag, build-complete]
+    uses: ./.github/workflows/tag-release.yml
+    permissions:
+      contents: write
+    secrets: inherit
+    with:
+      tag: ${{ needs.set-tag.outputs.tag }}
+      target-ref: ${{ inputs.target-ref }}
+      feature: ${{ inputs.feature }}
+
+  # Set target build in GitOps config (to be used in continuous deployment)
+  build-target:
+    name: 🎯 Set Target Build in Config
+    if: ${{ inputs.solution != 'featurevisor' }}
+    needs: [set-tag, build-complete]
+    uses: ./.github/workflows/gitops-update.yml
+    permissions:
+      contents: write
+    secrets: inherit
+    with:
+      config-item: '.build.${{ inputs.solution }}'
+      config-value: ${{ needs.set-tag.outputs.tag }}
+
+  ### Deploy to GitHub Pages in Solution Repo (considered the CI environment)
+
+  # Note: Uses artefacts created by build jobs above
+  deploy-ci:
+    name: Deploy CI
+    if: ${{ github.event_name == 'push' }}
+    needs: [set-tag]
+    uses: ./.github/workflows/deploy-static-site.yml
+    permissions:
+      contents: write
+      pages: write
+      id-token: write
+    with:
+      artefact-ref: ${{ needs.set-tag.outputs.tag }}
+      deploy-to: ${{ vars.DEPLOY_CI }}
+    secrets: inherit
+
+  ### Run CI Post-Deployment Tests here
+
+
+  
+  # Confirm CI Completed
+  ci-complete:
+    name: 👍 CI Complete
+    needs: [check-links, tag-release, build-target, deploy-ci] 
+    runs-on: ubuntu-latest
+    permissions:
+      contents: none
+    steps:
+      - name: Ready message
+        run: echo "### Continuous Integration Completed :thumbsup:" >> $GITHUB_STEP_SUMMARY
+
+  ci-failed:
+    name: 👎 CI Failed 
+    needs: [check-links, tag-release, build-target, deploy-ci] 
+    if: always() && ( contains(needs.*.result, 'failure') || contains(needs.*.result, 'cancelled') )
+    runs-on: ubuntu-latest 
+    permissions:
+      contents: none
+    steps:
+      - name: Ready message
+        run: echo "### Continuous Integration Failed :thumbsdown:" >> $GITHUB_STEP_SUMMARY
+
+  # Set target build in GitOps config (to be used in continuous deployment)
+  build-ci:
+    name: Set CI Build in Config
+    needs: [set-tag, ci-complete]
+    uses: ./.github/workflows/gitops-update.yml
+    permissions:
+      contents: write
+    with:
+      config-item: '.deploy.ci.${{ inputs.solution }}'
+      config-value: ${{ needs.set-tag.outputs.tag }}
+    secrets: inherit
+
+  # Dispatch to trigger deployment to Stage Environment
+  dispatch-stg:
+    name: Dispatch STG
+    needs: [ci-complete]
+    uses: ./.github/workflows/deployment-dispatch.yml
+    permissions:
+      contents: none
+    with:
+      blue-green: 'blue'
+      target-repo: ${{ vars.REPO_STAGE }}
+    secrets: inherit
