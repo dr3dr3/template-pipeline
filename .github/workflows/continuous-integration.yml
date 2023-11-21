@@ -124,7 +124,7 @@ jobs:
       id-token: write
     with:
       artefact-ref: ${{ needs.set-tag.outputs.tag }}
-      deploy-to: ${{ inputs.deploy-target }}
+      deploy-to: ${{ inputs.deploy-to }}
     secrets: inherit
 
   ### Run CI Post-Deployment Tests here
