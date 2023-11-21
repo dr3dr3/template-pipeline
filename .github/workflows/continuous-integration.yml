@@ -101,7 +101,6 @@ jobs:
   # Tag the release
   tag-release:
     name: 🚀 Tag and Release
-    if: ${{ github.event_name == 'push' }}
     needs: [set-tag, build-complete]
     uses: ./.github/workflows/tag-release.yml
     permissions:
@@ -136,7 +135,7 @@ jobs:
     needs: [build-complete]
     uses: ./.github/workflows/deployment-dispatch.yml
     permissions:
-      contents: none
+      contents: write
     with:
       blue-green: 'blue'
       target-repo: ${{ inputs.repo-stage }}

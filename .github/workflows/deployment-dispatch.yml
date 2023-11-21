@@ -17,7 +17,7 @@ on:
         type: string
 
 permissions:
-  contents: none
+  contents: write
     
 jobs:
 
@@ -60,14 +60,14 @@ jobs:
     timeout-minutes: 10
     runs-on: ubuntu-latest
     permissions:
-      contents: none
+      contents: write
 
     steps:
 
       - name: Dispatch
         run: |
           curl -H "Accept: application/vnd.github.everest-preview+json" \
-          -H "Authorization: token ${{ secrets.GHA_PAT }}" \
+          -H "Authorization: token ${{ secrets.CD_PAT }}" \
           --request POST --data '{"event_type": "deploy", "client_payload": {"blue-green": "${{ inputs.blue-green }}"}}' \
           https://api.github.com/repos/${{ inputs.target-repo }}/dispatches
           echo "Success"
