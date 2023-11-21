@@ -7,6 +7,9 @@ on:
       artefact-ref:
         required: true
         type: string
+      toggle:
+        required: true
+        type: boolean
 
 permissions:
   contents: read
@@ -42,7 +45,7 @@ jobs:
 
       - name: Check links 
         id: check-links
-        if: ${{ vars.CHECK_LINKS == 'true' }}
+        if: ${{ inputs.toggle }}
         run: |
           echo "### Linkinator" >> $GITHUB_STEP_SUMMARY
           cd _site
@@ -55,5 +58,5 @@ jobs:
           echo "Done: Set HTML variable"
 
       - name: Fail workflow
-        if: ${{ steps.check-links.outputs.RESULT != 'true' && vars.CHECK_LINKS == 'true' }}
+        if: ${{ steps.check-links.outputs.RESULT != 'true' && inputs.toggle }}
         run: exit 1

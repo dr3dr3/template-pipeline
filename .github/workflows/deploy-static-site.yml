@@ -37,7 +37,9 @@ jobs:
     steps:
 
       - name: Echo
-        run: echo "Starting deploy to ${{ inputs.deploy-to }} for ${{ inputs.site-url }}"
+        run: |
+          echo "### 🚀 Starting deploy to ${{ inputs.deploy-to }}" >> $GITHUB_STEP_SUMMARY
+          echo "${{ inputs.site-url }}" >> $GITHUB_STEP_SUMMARY
 
   deploy-ghp:
     name: 🚀 GHP

@@ -13,8 +13,17 @@ on:
         type: string
       solution:
         required: true
-        type: string 
-
+        type: string
+      deploy-ci:
+        required: true
+        type: string
+      repo-stage:
+        required: true
+        type: string
+      check-links:
+        required: true
+        type: boolean
+  
 permissions:
   contents: write
   pages: write
@@ -64,6 +73,7 @@ jobs:
       contents: read
     with: 
       artefact-ref: ${{ needs.set-tag.outputs.tag }}
+      toggle: ${{ inputs.check-links }}
 
   ### Check builds ok. Is a required check on the PR (setup in GitHub). 
 
@@ -102,21 +112,7 @@ jobs:
       target-ref: ${{ inputs.target-ref }}
       feature: ${{ inputs.feature }}
 
-  # Set target build in GitOps config (to be used in continuous deployment)
-  build-target:
-    name: 🎯 Set Target Build in Config
-    if: ${{ inputs.solution != 'featurevisor' }}
-    needs: [set-tag, build-complete]
-    uses: ./.github/workflows/gitops-update.yml
-    permissions:
-      contents: write
-    secrets: inherit
-    with:
-      config-item: '.build.${{ inputs.solution }}'
-      config-value: ${{ needs.set-tag.outputs.tag }}
-
-  ### Deploy to GitHub Pages in Solution Repo (considered the CI environment)
-
+  # Deploy to GitHub Pages in Solution Repo (considered the CI environment)
   # Note: Uses artefacts created by build jobs above
   deploy-ci:
     name: Deploy CI
@@ -129,7 +125,7 @@ jobs:
       id-token: write
     with:
       artefact-ref: ${{ needs.set-tag.outputs.tag }}
-      deploy-to: ${{ vars.DEPLOY_CI }}
+      deploy-to: ${{ inputs.deploy-ci }}
     secrets: inherit
 
   ### Run CI Post-Deployment Tests here
@@ -139,7 +135,7 @@ jobs:
   # Confirm CI Completed
   ci-complete:
     name: 👍 CI Complete
-    needs: [check-links, tag-release, build-target, deploy-ci] 
+    needs: [check-links, tag-release, deploy-ci] 
     runs-on: ubuntu-latest
     permissions:
       contents: none
@@ -147,9 +143,10 @@ jobs:
       - name: Ready message
         run: echo "### Continuous Integration Completed :thumbsup:" >> $GITHUB_STEP_SUMMARY
 
+  # Confirm CI Failed
   ci-failed:
     name: 👎 CI Failed 
-    needs: [check-links, tag-release, build-target, deploy-ci] 
+    needs: [check-links, tag-release, deploy-ci] 
     if: always() && ( contains(needs.*.result, 'failure') || contains(needs.*.result, 'cancelled') )
     runs-on: ubuntu-latest 
     permissions:
@@ -157,18 +154,6 @@ jobs:
     steps:
       - name: Ready message
         run: echo "### Continuous Integration Failed :thumbsdown:" >> $GITHUB_STEP_SUMMARY
-
-  # Set target build in GitOps config (to be used in continuous deployment)
-  build-ci:
-    name: Set CI Build in Config
-    needs: [set-tag, ci-complete]
-    uses: ./.github/workflows/gitops-update.yml
-    permissions:
-      contents: write
-    with:
-      config-item: '.deploy.ci.${{ inputs.solution }}'
-      config-value: ${{ needs.set-tag.outputs.tag }}
-    secrets: inherit
 
   # Dispatch to trigger deployment to Stage Environment
   dispatch-stg:
@@ -179,5 +164,5 @@ jobs:
       contents: none
     with:
       blue-green: 'blue'
-      target-repo: ${{ vars.REPO_STAGE }}
+      target-repo: ${{ inputs.repo-stage }}
     secrets: inherit
