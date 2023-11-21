@@ -14,7 +14,7 @@ on:
       solution:
         required: true
         type: string
-      deploy-ci:
+      deploy-to:
         required: true
         type: string
       repo-stage:
@@ -124,7 +124,7 @@ jobs:
       id-token: write
     with:
       artefact-ref: ${{ needs.set-tag.outputs.tag }}
-      deploy-to: ${{ inputs.deploy-ci }}
+      deploy-to: ${{ inputs.deploy-target }}
     secrets: inherit
 
   ### Run CI Post-Deployment Tests here
