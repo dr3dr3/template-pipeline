@@ -22,7 +22,7 @@ on:
         type: string
       check-links:
         required: true
-        type: boolean
+        type: string
   
 permissions:
   contents: write
@@ -117,7 +117,7 @@ jobs:
   deploy-ci:
     name: Deploy CI
     if: ${{ github.event_name == 'push' }}
-    needs: [set-tag]
+    needs: [set-tag, build-complete]
     uses: ./.github/workflows/deploy-static-site.yml
     permissions:
       contents: write
@@ -131,11 +131,22 @@ jobs:
   ### Run CI Post-Deployment Tests here
 
 
-  
+  # Dispatch to trigger deployment to Stage Environment
+  dispatch-stg:
+    name: Dispatch STG
+    needs: [build-complete]
+    uses: ./.github/workflows/deployment-dispatch.yml
+    permissions:
+      contents: none
+    with:
+      blue-green: 'blue'
+      target-repo: ${{ inputs.repo-stage }}
+    secrets: inherit
+
   # Confirm CI Completed
   ci-complete:
     name: 👍 CI Complete
-    needs: [check-links, tag-release, deploy-ci] 
+    needs: [tag-release, deploy-ci, dispatch-stg] 
     runs-on: ubuntu-latest
     permissions:
       contents: none
@@ -146,7 +157,7 @@ jobs:
   # Confirm CI Failed
   ci-failed:
     name: 👎 CI Failed 
-    needs: [check-links, tag-release, deploy-ci] 
+    needs: [tag-release, deploy-ci, dispatch-stg] 
     if: always() && ( contains(needs.*.result, 'failure') || contains(needs.*.result, 'cancelled') )
     runs-on: ubuntu-latest 
     permissions:
@@ -154,15 +165,3 @@ jobs:
     steps:
       - name: Ready message
         run: echo "### Continuous Integration Failed :thumbsdown:" >> $GITHUB_STEP_SUMMARY
-
-  # Dispatch to trigger deployment to Stage Environment
-  dispatch-stg:
-    name: Dispatch STG
-    needs: [ci-complete]
-    uses: ./.github/workflows/deployment-dispatch.yml
-    permissions:
-      contents: none
-    with:
-      blue-green: 'blue'
-      target-repo: ${{ inputs.repo-stage }}
-    secrets: inherit
