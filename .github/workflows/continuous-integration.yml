@@ -116,7 +116,6 @@ jobs:
   # Note: Uses artefacts created by build jobs above
   deploy-ci:
     name: Deploy CI
-    if: ${{ github.event_name == 'push' }}
     needs: [set-tag, build-complete]
     uses: ./.github/workflows/deploy-static-site.yml
     permissions:
@@ -146,7 +145,7 @@ jobs:
   # Confirm CI Completed
   ci-complete:
     name: 👍 CI Complete
-    needs: [tag-release, deploy-ci, dispatch-stg] 
+    needs: [deploy-ci, dispatch-stg] 
     runs-on: ubuntu-latest
     permissions:
       contents: none

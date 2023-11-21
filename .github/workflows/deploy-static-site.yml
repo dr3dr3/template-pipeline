@@ -38,7 +38,7 @@ jobs:
 
       - name: Echo
         run: |
-          echo "### 🚀 Starting deploy to ${{ inputs.deploy-to }}" >> $GITHUB_STEP_SUMMARY
+          echo "### 🚀 Deploying to ${{ inputs.deploy-to }}" >> $GITHUB_STEP_SUMMARY
           echo "${{ inputs.site-url }}" >> $GITHUB_STEP_SUMMARY
 
   deploy-ghp:
@@ -53,7 +53,7 @@ jobs:
     timeout-minutes: 10
     runs-on: ubuntu-latest
     permissions:
-      contents: write
+      contents: read
       pages: write
       id-token: write
     steps:
@@ -74,7 +74,7 @@ jobs:
 
       - name: Deploy to GitHub Pages 🚀
         id: deployment
-        uses: actions/deploy-pages@v1
+        uses: actions/deploy-pages@v2
 
       - name: Summary
         run: |

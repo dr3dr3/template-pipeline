@@ -73,6 +73,12 @@ jobs:
       - name: 🔨 Run build
         run: npm run build
 
+      - name: 🔨 Build Slidev
+        if: ${{ inputs.solution == 'SLIDEV'}}
+        env:
+          BASE: ${{ github.event.repository.name }}
+        run: npm run build --base /$BASE/
+
       - name: Export command needed for Featurevisor
         if: inputs.solution == 'FEATUREVISOR'
         run: npm run export
