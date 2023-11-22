@@ -45,7 +45,7 @@ jobs:
     env:
       REPO: ${{ inputs.repo-gitops }}
     permissions:
-      contents: none
+      contents: write
     steps:
       - name: Dispatch
         uses: actions/github-script@v7
@@ -57,7 +57,7 @@ jobs:
               repo: context.repo.repo,
               event_type: 'cicd-event',
               client_payload: {"phase": "start", "outcome": "success"}
-            });
+            })
 
   set-tag:
     name: 🔖 Set Tag
