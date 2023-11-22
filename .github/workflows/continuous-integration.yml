@@ -39,7 +39,7 @@ jobs:
 
   # Dispatch event (ci-on-main) to GitOps repo
   dispatch-ci-on-main:
-    name: 📨 CI-on-Main
+    name: 📨 CICD Event - Start
     timeout-minutes: 5
     runs-on: ubuntu-latest
     env:
