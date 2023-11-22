@@ -45,19 +45,20 @@ jobs:
     env:
       REPO: ${{ inputs.repo-gitops }}
     permissions:
-      contents: write
+      contents: none
     steps:
       - name: Dispatch
         uses: actions/github-script@v7
         with:
           github-token: ${{ secrets.CD_PAT }}
           script: |
+            const { REPO } = process.env
             github.rest.repos.dispatches({
               owner: context.repo.owner,
-              repo: context.repo.repo,
+              repo: 'template-gitops',
               event_type: 'cicd-event',
               client_payload: {"phase": "start", "outcome": "success"}
-            })
+            });
 
   set-tag:
     name: 🔖 Set Tag
