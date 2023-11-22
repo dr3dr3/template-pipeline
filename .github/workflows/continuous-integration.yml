@@ -50,9 +50,8 @@ jobs:
       - name: Dispatch
         uses: actions/github-script@v7
         with:
-          github-token: ${{ secrets.cd_PAT }}
+          github-token: ${{ secrets.CD_PAT }}
           script: |
-            const { REPO } = process.env
             github.rest.repos.dispatches({
               owner: context.repo.owner,
               repo: context.repo.repo,
