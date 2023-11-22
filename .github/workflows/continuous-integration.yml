@@ -53,7 +53,7 @@ jobs:
           github-token: ${{ secrets.CD_PAT }}
           script: |
             const { REPO } = process.env
-            github.rest.repos.dispatches({
+            github.rest.repo.dispatches({
               owner: context.repo.owner,
               repo: 'template-gitops',
               event_type: 'cicd-event',
