@@ -4,13 +4,10 @@ name: CHECK-LINKS
 on:
   workflow_call:
     inputs:
-      artefact-ref:
+      site-url:
         required: true
         type: string
       toggle:
-        required: true
-        type: string
-      repo-gitops:
         required: true
         type: string
 
@@ -27,20 +24,6 @@ jobs:
       contents: read
     steps:
 
-      - name: Checkout
-        uses: actions/checkout@v3
-        with:
-          repository: ${{ inputs.repo-gitops }}
-          ref: 'main'
-          token: ${{ secrets.CD_PAT }}
-
-      - name: Download build artifacts
-        if: ${{ inputs.toggle == 'true' }}
-        uses: actions/download-artifact@v3
-        with:
-          name: ${{ inputs.artefact-ref }}
-          path: _site
-
       - name: Setup Node.JS
         if: ${{ inputs.toggle == 'true' }}
         uses: actions/setup-node@v3
@@ -56,16 +39,15 @@ jobs:
       - name: Check links 
         id: check-links
         if: ${{ inputs.toggle == 'true' }}
+        env:
+          SITE_URL: ${{ inputs.site-url }}
         run: |
           cd _site
-          echo "### Linkinator" >> $GITHUB_STEP_SUMMARY
-          npx linkinator "**/*.html" --config "../config/linkinator.config.json"
-          echo $(npx linkinator "**/*.html" --config "../config/linkinator.config.json") >> $GITHUB_STEP_SUMMARY
-          echo "Done: GitHub Step Summary"
-          echo $(npx linkinator "**/*.html" --config "../config/linkinator.config.json") >> links-html.json
-          echo "Done: Create links-html.json"
+          echo "### ✅ Check: Hyperlinks using Linkinator" >> $GITHUB_STEP_SUMMARY
+          npx linkinator "$SITE_URL" --config "../config/linkinator.config.json"
+          echo $(npx linkinator "$SITE_URL" --config "../config/linkinator.config.json") >> $GITHUB_STEP_SUMMARY
+          echo $(npx linkinator "$SITE_URL" --config "../config/linkinator.config.json") >> links-html.json
           echo 'RESULT='$(jq '.passed' links-html.json) >> $GITHUB_OUTPUT
-          echo "Done: Set HTML variable"
 
       - name: Fail workflow
         if: ${{ steps.check-links.outputs.RESULT != 'true' && inputs.toggle == 'true' }}

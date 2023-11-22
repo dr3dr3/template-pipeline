@@ -80,7 +80,7 @@ jobs:
           path: build/_site
           retention-days: 1
 
-  build-artifacts:
+  combine-artifacts:
     name: Compile Build Artifacts
     needs: [get-build-artifacts]
     timeout-minutes: 10
@@ -117,8 +117,7 @@ jobs:
       # - name: Update DEPLOY-HOST-PLACEHOLDER
       #   run: grep -rl DEPLOY-HOST-PLACEHOLDER . | xargs sed -i 's@DEPLOY-HOST-PLACEHOLDER@${{ inputs.deploy-to }}@g'
 
-      ##### Upload Deployable Artifact
-
+      # Upload deployable artifact for combined static site
       - name: Upload Build Artifacts
         uses: actions/upload-artifact@v3
         with:
@@ -128,25 +127,12 @@ jobs:
   
   ### Pre-Deployment Tests
 
-  # Check links working in compiled deploy artefact
-  check-links:
-    name: Check Links
-    needs: [build-artifacts]
-    uses: ./.github/workflows/check-links.yml
-    permissions:
-      contents: read
-    secrets: inherit
-    with: 
-      artefact-ref: ${{ format('{0}-{1}', 'RC', github.run_id ) }}
-      toggle: ${{ inputs.check-links }}
-      repo-gitops: ${{ inputs.repo-gitops }}
 
-  ### Deployment
   
   # Deploy to Static Site Host
   deploy-static-site:
     name: Deploy to 
-    needs: [build-artifacts, check-links]
+    needs: [combine-artifacts]
     uses: ./.github/workflows/deploy-static-site.yml
     permissions:
       contents: read
@@ -160,6 +146,18 @@ jobs:
 
   ### Post-deployment Tests (smoke, PVT, etc)
   
+  # Check links working in deployed static site
+  check-links:
+    name: Check Links
+    needs: [deploy-static-site]
+    uses: ./.github/workflows/check-links.yml
+    permissions:
+      contents: read
+    secrets: inherit
+    with: 
+      site-url: ${{ inputs.site-url }}
+      toggle: ${{ inputs.check-links }}
+
   post-deploy-test:
     name: Placeholder for post-deployment tests
     needs: [deploy-static-site]
@@ -168,14 +166,13 @@ jobs:
     permissions:
       contents: none
     steps:
-
       - name: Echo
         run: echo "Placeholder for post-deploy test"
 
   # Check all acceptance completed
-  acceptance-complete:
-    name: Acceptance 👍
-    needs: [build-artifacts, check-links, deploy-static-site, post-deploy-test] ### ADD ALL CHECKS
+  deployment-complete:
+    name: Deployment 👍
+    needs: [get-config, get-build-artifacts, combine-artifacts, deploy-static-site, check-links, post-deploy-test] 
     if: always() && !contains(needs.*.result, 'failure') && !contains(needs.*.result, 'cancelled')
     runs-on: ubuntu-latest
     permissions:
@@ -183,11 +180,11 @@ jobs:
     steps:
 
       - name: Ready message
-        run: echo "### Acceptance Completed :thumbsup:" >> $GITHUB_STEP_SUMMARY
+        run: echo "### Deployment Completed :thumbsup:" >> $GITHUB_STEP_SUMMARY
 
-  acceptance-failed:
-    name: Acceptance 👎
-    needs: [build-artifacts, check-links, deploy-static-site, post-deploy-test] ### ADD ALL CHECKS
+  deployment-failed:
+    name: Deployment 👎
+    needs: [get-config, get-build-artifacts, combine-artifacts, deploy-static-site, check-links, post-deploy-test] 
     if: always() && ( contains(needs.*.result, 'failure') || contains(needs.*.result, 'cancelled') )
     runs-on: ubuntu-latest
     permissions:
@@ -195,4 +192,4 @@ jobs:
     steps:
 
       - name: Ready message
-        run: echo "### Acceptance Failed :thumbsdown:" >> $GITHUB_STEP_SUMMARY
+        run: echo "### Deployment Failed :thumbsdown:" >> $GITHUB_STEP_SUMMARY

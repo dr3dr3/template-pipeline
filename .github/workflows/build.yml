@@ -1,4 +1,4 @@
-name: BUILD-REVEALMD
+name: BUILD
 
 on:
   workflow_call:
@@ -91,10 +91,13 @@ jobs:
         if: inputs.solution == 'FEATUREVISOR'
         run: rsync -avh out/ _site
 
-      - name: Upload Build Artifacts
+      - name: Upload build artifacts
         uses: actions/upload-artifact@v3
         with:
           name: ${{ inputs.artefact-ref }}
           # Output of build should be in _site folder
           path: _site
           retention-days: 1
+
+      - name: Build completed
+        run: echo "### Builds Completed :thumbsup:" >> $GITHUB_STEP_SUMMARY

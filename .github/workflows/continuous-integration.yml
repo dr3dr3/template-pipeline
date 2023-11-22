@@ -14,22 +14,51 @@ on:
       solution:
         required: true
         type: string
+      site-url:
+        required: true
+        type: string
+      check-links:
+        required: true
+        type: string
       deploy-to:
         required: true
         type: string
       repo-stage:
         required: true
         type: string
-      check-links:
+      repo-gitops:
         required: true
         type: string
-  
+
 permissions:
   contents: write
   pages: write
   id-token: write
 
 jobs:
+
+  # Dispatch event (ci-on-main) to GitOps repo
+  dispatch-ci-on-main:
+    name: 📨 CI-on-Main
+    timeout-minutes: 5
+    runs-on: ubuntu-latest
+    env:
+      REPO: ${{ inputs.repo-gitops }}
+    permissions:
+      contents: none
+    steps:
+      - name: Dispatch
+        uses: actions/github-scripts@v7
+        with:
+          github-token: ${{ secrets.cd_PAT }}
+          script: |
+            const { REPO } = process.env
+            github.rest.repos.dispatches({
+              owner: context.repo.owner,
+              repo: ${REPO},
+              event_type: 'cicd-event',
+              client_payload: {"phase": "start", "outcome": "success"}
+            });
 
   set-tag:
     name: 🔖 Set Tag
@@ -64,44 +93,12 @@ jobs:
 
   ### Pre-deployment tests on the package from build above
 
-  # Test for broken hyperlinks
-  check-links:
-    name: 🔗 Check Links
-    needs: [set-tag, build]
-    uses: ./.github/workflows/check-links.yml
-    permissions:
-      contents: read
-    with: 
-      artefact-ref: ${{ needs.set-tag.outputs.tag }}
-      toggle: ${{ inputs.check-links }}
 
-  ### Check builds ok. Is a required check on the PR (setup in GitHub). 
-
-  build-complete:
-    name: 👍 Build
-    needs: [build, check-links] 
-    runs-on: ubuntu-latest 
-    permissions:
-      contents: none
-    steps:
-      - name: Ready message
-        run: echo "### Builds Completed :thumbsup:" >> $GITHUB_STEP_SUMMARY
-
-  build-failed:
-    name: 👎 Build
-    needs: [build, check-links] 
-    if: always() && ( contains(needs.*.result, 'failure') || contains(needs.*.result, 'cancelled') )
-    runs-on: ubuntu-latest 
-    permissions:
-      contents: none
-    steps:
-      - name: Ready message
-        run: echo "### Builds Failed :thumbsdown:" >> $GITHUB_STEP_SUMMARY
 
   # Tag the release
   tag-release:
     name: 🚀 Tag and Release
-    needs: [set-tag, build-complete]
+    needs: [set-tag, build]
     uses: ./.github/workflows/tag-release.yml
     permissions:
       contents: write
@@ -115,7 +112,7 @@ jobs:
   # Note: Uses artefacts created by build jobs above
   deploy-ci:
     name: Deploy CI
-    needs: [set-tag, build-complete]
+    needs: [set-tag, build, tag-release]
     uses: ./.github/workflows/deploy-static-site.yml
     permissions:
       contents: write
@@ -128,11 +125,21 @@ jobs:
 
   ### Run CI Post-Deployment Tests here
 
+  # Test for broken hyperlinks
+  check-links:
+    name: 🔗 Check Links
+    needs: [deploy-ci]
+    uses: ./.github/workflows/check-links.yml
+    permissions:
+      contents: read
+    with: 
+      site-url: ${{ inputs.site-url }}
+      toggle: ${{ inputs.check-links }}
 
   # Dispatch to trigger deployment to Stage Environment
   dispatch-stg:
     name: Dispatch STG
-    needs: [build-complete]
+    needs: [build, check-links]
     uses: ./.github/workflows/deployment-dispatch.yml
     permissions:
       contents: write
@@ -144,7 +151,7 @@ jobs:
   # Confirm CI Completed
   ci-complete:
     name: 👍 CI Complete
-    needs: [deploy-ci, dispatch-stg] 
+    needs: [set-tag, build, deploy-ci, dispatch-stg] 
     runs-on: ubuntu-latest
     permissions:
       contents: none
@@ -155,7 +162,7 @@ jobs:
   # Confirm CI Failed
   ci-failed:
     name: 👎 CI Failed 
-    needs: [tag-release, deploy-ci, dispatch-stg] 
+    needs: [set-tag, build, deploy-ci, dispatch-stg]  
     if: always() && ( contains(needs.*.result, 'failure') || contains(needs.*.result, 'cancelled') )
     runs-on: ubuntu-latest 
     permissions:
