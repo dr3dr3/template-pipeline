@@ -10,6 +10,9 @@ on:
       toggle:
         required: true
         type: string
+      repo-gitops:
+        required: true
+        type: string
 
 permissions:
   contents: read
@@ -24,7 +27,12 @@ jobs:
       contents: read
     steps:
 
-      # Checkout GitOps???
+      - name: Checkout
+        uses: actions/checkout@v3
+        with:
+          repository: ${{ inputs.repo-gitops }}
+          ref: 'main'
+          token: ${{ secrets.CD_PAT }}
 
       - name: Setup Node.JS
         if: ${{ inputs.toggle == 'true' }}

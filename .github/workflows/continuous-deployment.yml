@@ -189,6 +189,7 @@ jobs:
     with: 
       site-url: ${{ inputs.site-url }}
       toggle: ${{ inputs.check-links }}
+      repo-gitops: ${{ inputs.repo-gitops }}
 
   post-deploy-test:
     name: Placeholder for post-deployment tests

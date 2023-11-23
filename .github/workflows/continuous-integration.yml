@@ -198,6 +198,7 @@ jobs:
     with: 
       site-url: ${{ inputs.site-url }}
       toggle: ${{ inputs.check-links }}
+      repo-gitops: ${{ inputs.repo-gitops }}
 
   # Dispatch to trigger deployment to Stage Environment
   dispatch-stg:
