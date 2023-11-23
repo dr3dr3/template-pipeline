@@ -63,13 +63,12 @@ jobs:
       matrix: ${{ fromJSON(needs.get-config.outputs.matrix-solutions) }}
     permissions:
       contents: none
-    env:
-      REPO: '${{ github.repository_owner }}/${{ matrix.repo }}'
-
     steps:
 
       - name: Download latest build artifact
         if: ${{ matrix.status == 'active' }}
+        env:
+          REPO: '${{ github.repository_owner }}/${{ matrix.repo }}'
         run: |
           wget $(curl -s https://api.github.com/repos/$REPO/releases/latest/  |  jq -r '.assets[] | select(.name | contains ("build")) | .browser_download_url')
           mkdir build
