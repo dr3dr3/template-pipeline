@@ -50,7 +50,7 @@ jobs:
       - name: Get Solution Repo's
         id: repos
         run: |
-          repos=$(yq '{"include": .repositories.solutions } | select(.status == "active")' repositories.yml -o=json | jq -c)
+          repos=$(yq '{"include": .repositories.solutions }' repositories.yml -o=json | jq -c)
           echo $repos
           echo "SOLUTIONS=$repos" >> $GITHUB_OUTPUT
 
@@ -69,12 +69,14 @@ jobs:
     steps:
 
       - name: Download latest build artifact
+        if: ${{ matrix.status == 'active' }}
         run: |
           wget $(curl -s https://api.github.com/repos/$REPO/releases/latest/  |  jq -r '.assets[] | select(.name | contains ("build")) | .browser_download_url')
           mkdir build
           tar -xzvf build.tar.gz -C build
 
       - name: Upload build artifacts
+        if: ${{ matrix.status == 'active' }}
         uses: actions/upload-artifact@v3
         with:
           name: ${{ matrix.route }}

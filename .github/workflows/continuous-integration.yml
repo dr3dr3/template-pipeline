@@ -55,7 +55,7 @@ jobs:
             const { REPO } = process.env
             github.rest.repos.createDispatchEvent({
               owner: context.repo.owner,
-              repo: ${REPO},
+              repo: $REPO,
               event_type: 'cicd-event',
               client_payload: {"phase": "start", "outcome": "success"}
             });
