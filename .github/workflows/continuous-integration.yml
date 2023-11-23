@@ -53,7 +53,7 @@ jobs:
           github-token: ${{ secrets.CD_PAT }}
           script: |
             const { REPO_GITOPS } = process.env
-            const repo = /[^/]*$/.exec($REPO_GITOPS)[0];
+            const repo = /[^/]*$/.exec(`${REPO_GITOPS}`)[0];
             console.log(repo)
             github.rest.repos.createDispatchEvent({
               owner: context.repo.owner,
