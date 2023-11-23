@@ -195,6 +195,7 @@ jobs:
     uses: ./.github/workflows/check-links.yml
     permissions:
       contents: read
+    secrets: inherit
     with: 
       site-url: ${{ inputs.site-url }}
       toggle: ${{ inputs.check-links }}
