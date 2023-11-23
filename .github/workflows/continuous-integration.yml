@@ -48,14 +48,16 @@ jobs:
       - name: Dispatch
         uses: actions/github-script@v7
         env:
-          REPO: ${{ inputs.repo-gitops }}
+          REPO_GITOPS: ${{ inputs.repo-gitops }}
         with:
           github-token: ${{ secrets.CD_PAT }}
           script: |
-            const { REPO } = process.env
+            const { REPO_GITOPS } = process.env
+            const repo = /[^/]*$/.exec($REPO_GITOPS)[0];
+            console.log(repo)
             github.rest.repos.createDispatchEvent({
               owner: context.repo.owner,
-              repo: `${REPO}`,
+              repo: `${repo}`,
               event_type: 'cicd-event',
               client_payload: { "phase": "start", "outcome": "success" }
             });
