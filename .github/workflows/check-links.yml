@@ -24,6 +24,8 @@ jobs:
       contents: read
     steps:
 
+      # Checkout GitOps???
+
       - name: Setup Node.JS
         if: ${{ inputs.toggle == 'true' }}
         uses: actions/setup-node@v3
