@@ -52,10 +52,9 @@ jobs:
         with:
           github-token: ${{ secrets.CD_PAT }}
           script: |
-            const { REPO } = process.env
             github.rest.repos.createDispatchEvent({
               owner: context.repo.owner,
-              repo: $REPO,
+              repo: process.env.REPO,
               event_type: 'cicd-event',
               client_payload: { "phase": "start", "outcome": "success" }
             });
