@@ -48,18 +48,21 @@ jobs:
       - name: Dispatch
         uses: actions/github-script@v7
         env:
+          OWNER: ${{ github.repository_owner }}
           REPO_GITOPS: ${{ inputs.repo-gitops }}
+          PHASE: 'start'
+          OUTCOME: 'success'
         with:
           github-token: ${{ secrets.CD_PAT }}
           script: |
-            const { REPO_GITOPS } = process.env
+            const { OWNER, REPO_GITOPS, PHASE, OUTCOME } = process.env
             const repo = /[^/]*$/.exec(`${REPO_GITOPS}`)[0];
             console.log(repo)
             github.rest.repos.createDispatchEvent({
-              owner: context.repo.owner,
+              owner: `${OWNER}`,
               repo: `${repo}`,
               event_type: 'cicd-event',
-              client_payload: { "phase": "start", "outcome": "success" }
+              client_payload: { "phase": `${PHASE}`, "outcome": `${OUTCOME}` }
             });
 
   set-tag:
@@ -102,16 +105,25 @@ jobs:
     permissions:
       contents: none
     steps:
-      - name: Dispatch CICD event
-        id: template-exists
-        run: .github/actions-scripts/create-dispatch-cicd-event.mjs
+      - name: Dispatch
+        uses: actions/github-script@v7
         env:
-          GHA_TOKEN: ${{ secrets.GITOPS_PAT }}
-          REPO_OWNER: ${{ github.repository_owner }}
-          REPO_NAME: ${{ inputs.repo-gitops }}
-          EVENT_TYPE: 'cicd-event'
-          PHASE: 'build'
+          OWNER: ${{ github.repository_owner }}
+          REPO_GITOPS: ${{ inputs.repo-gitops }}
+          PHASE: 'start'
           OUTCOME: ${{ needs.build.result }}
+        with:
+          github-token: ${{ secrets.CD_PAT }}
+          script: |
+            const { OWNER, REPO_GITOPS, PHASE, OUTCOME } = process.env
+            const repo = /[^/]*$/.exec(`${REPO_GITOPS}`)[0];
+            console.log(repo)
+            github.rest.repos.createDispatchEvent({
+              owner: `${OWNER}`,
+              repo: `${repo}`,
+              event_type: 'cicd-event',
+              client_payload: { "phase": `${PHASE}`, "outcome": `${OUTCOME}` }
+            });
 
   ### Pre-deployment tests on the package from build above
 
@@ -154,16 +166,25 @@ jobs:
     permissions:
       contents: none
     steps:
-      - name: Dispatch CICD event
-        id: template-exists
-        run: .github/actions-scripts/create-dispatch-cicd-event.mjs
+      - name: Dispatch
+        uses: actions/github-script@v7
         env:
-          GHA_TOKEN: ${{ secrets.GITOPS_PAT }}
-          REPO_OWNER: ${{ github.repository_owner }}
-          REPO_NAME: ${{ inputs.repo-gitops }}
-          EVENT_TYPE: 'cicd-event'
-          PHASE: 'ci'
+          OWNER: ${{ github.repository_owner }}
+          REPO_GITOPS: ${{ inputs.repo-gitops }}
+          PHASE: 'start'
           OUTCOME: ${{ needs.deploy-ci.result }}
+        with:
+          github-token: ${{ secrets.CD_PAT }}
+          script: |
+            const { OWNER, REPO_GITOPS, PHASE, OUTCOME } = process.env
+            const repo = /[^/]*$/.exec(`${REPO_GITOPS}`)[0];
+            console.log(repo)
+            github.rest.repos.createDispatchEvent({
+              owner: `${OWNER}`,
+              repo: `${repo}`,
+              event_type: 'cicd-event',
+              client_payload: { "phase": `${PHASE}`, "outcome": `${OUTCOME}` }
+            });
 
   ### Run CI Post-Deployment Tests here
 
