@@ -47,7 +47,7 @@ jobs:
     steps:
       - name: Dispatch CICD event
         id: template-exists
-        run: .github/actions-scripts/create-dispatch-cicd-event.mjs
+        run: ./.github/actions-scripts/create-dispatch-cicd-event.mjs
         env:
           GHA_TOKEN: ${{ secrets.GITOPS_PAT }}
           REPO_OWNER: ${{ github.repository_owner }}
