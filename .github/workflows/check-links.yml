@@ -42,7 +42,6 @@ jobs:
         env:
           SITE_URL: ${{ inputs.site-url }}
         run: |
-          cd _site
           echo "### ✅ Check: Hyperlinks using Linkinator" >> $GITHUB_STEP_SUMMARY
           npx linkinator "$SITE_URL" --config "../config/linkinator.config.json"
           echo $(npx linkinator "$SITE_URL" --config "../config/linkinator.config.json") >> $GITHUB_STEP_SUMMARY

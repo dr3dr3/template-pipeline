@@ -147,6 +147,35 @@ jobs:
       deploy-to: ${{ inputs.deploy-to }}
       site-url: ${{ inputs.site-url }}
 
+  # Dispatch event (ci-on-main) to GitOps repo
+  dispatch-cicd-ci:
+    name: 📨 CICD Event - Deploy CI
+    needs: [deploy-static-site]
+    timeout-minutes: 5
+    runs-on: ubuntu-latest
+    permissions:
+      contents: none
+    steps:
+      - name: Dispatch
+        uses: actions/github-script@v7
+        env:
+          OWNER: ${{ github.repository_owner }}
+          REPO_GITOPS: ${{ inputs.repo-gitops }}
+          PHASE: ${{ inputs.target-deploy }}
+          OUTCOME: ${{ needs.deploy-static-site.result }}
+        with:
+          github-token: ${{ secrets.CD_PAT }}
+          script: |
+            const { OWNER, REPO_GITOPS, PHASE, OUTCOME } = process.env
+            const repo = /[^/]*$/.exec(`${REPO_GITOPS}`)[0];
+            console.log(repo)
+            github.rest.repos.createDispatchEvent({
+              owner: `${OWNER}`,
+              repo: `${repo}`,
+              event_type: 'cicd-event',
+              client_payload: { "phase": `${PHASE}`, "outcome": `${OUTCOME}` }
+            });
+
   ### Post-deployment Tests (smoke, PVT, etc)
   
   # Check links working in deployed static site
