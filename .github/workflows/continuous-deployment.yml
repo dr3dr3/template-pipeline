@@ -71,7 +71,7 @@ jobs:
       - name: Download latest build artifact
         if: ${{ matrix.status == 'active' }}
         run: |
-          wget $(curl -s https://api.github.com/repos/$REPO/releases/latest/  |  jq -r '.assets[] | select(.name | contains ("build")) | .browser_download_url')
+          wget $(curl -s https://api.github.com/repos/${REPO}/releases/latest/  |  jq -r '.assets[] | select(.name | contains ("build")) | .browser_download_url')
           mkdir build
           tar -xzvf build.tar.gz -C build
 
