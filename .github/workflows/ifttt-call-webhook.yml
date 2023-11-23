@@ -31,8 +31,10 @@ on:
         type: choice
         options:
         - default
-        - fail
+        - failure
         - success
+        - cancelled
+        - skipped
 
 jobs:
     ifttt-webhook-call:
@@ -42,67 +44,67 @@ jobs:
         steps:
     
         - name: CD Start
-          if: inputs.phase == 'start' || inputs.phase == 'test'
+          if: ${{ inputs.phase == 'start' || inputs.phase == 'test' }}
           run: |
             curl -X POST -H 'Content-Type: application/json' -d '{"phase":"start", "outcome":"success"}' https://maker.ifttt.com/trigger/gha_cd_start/json/with/key/${{ secrets.IFTTT }}
             sleep 5
 
         - name: Build Fail
-          if: inputs.phase == 'build' && inputs.outcome == 'fail' || inputs.phase == 'test'
+          if: ${{ ( inputs.phase == 'build' && inputs.outcome == 'failure' ) || inputs.phase == 'test' }}
           run: |
             curl -X POST -H 'Content-Type: application/json' -d '{"phase":"build", "outcome":"fail"}' https://maker.ifttt.com/trigger/gha_build_fail/json/with/key/${{ secrets.IFTTT }}
             sleep 5
 
         - name: Build Success
-          if: inputs.phase == 'build' && inputs.outcome == 'success' || inputs.phase == 'test'
+          if: ${{ ( inputs.phase == 'build' && inputs.outcome == 'success' ) || inputs.phase == 'test' }}
           run: |
             curl -X POST -H 'Content-Type: application/json' -d '{"phase":"build", "outcome":"success"}' https://maker.ifttt.com/trigger/gha_build_success/json/with/key/${{ secrets.IFTTT }}
             sleep 5
   
         - name: CI Fail
-          if: inputs.phase == 'ci' && inputs.outcome == 'fail' || inputs.phase == 'test'
+          if: ${{ ( inputs.phase == 'ci' && inputs.outcome == 'failure' ) || inputs.phase == 'test' }}
           run: |
             curl -X POST -H 'Content-Type: application/json' -d '{"phase":"ci", "outcome":"fail"}' https://maker.ifttt.com/trigger/gha_ci_fail/json/with/key/${{ secrets.IFTTT }}
             sleep 5
   
         - name: CI Success
-          if: inputs.phase == 'ci' && inputs.outcome == 'success' || inputs.phase == 'test'
+          if: ${{ ( inputs.phase == 'ci' && inputs.outcome == 'success' ) || inputs.phase == 'test' }}
           run: |
             curl -X POST -H 'Content-Type: application/json' -d '{"phase":"ci", "outcome":"success"}' https://maker.ifttt.com/trigger/gha_ci_success/json/with/key/${{ secrets.IFTTT }}
             sleep 5
     
         - name: STG Fail
-          if: inputs.phase == 'stg' && inputs.outcome == 'fail' || inputs.phase == 'test'
+          if: ${{ ( inputs.phase == 'stg' && inputs.outcome == 'failure' ) || inputs.phase == 'test' }}
           run: |
             curl -X POST -H 'Content-Type: application/json' -d '{"phase":"stg", "outcome":"fail"}' https://maker.ifttt.com/trigger/gha_stg_fail/json/with/key/${{ secrets.IFTTT }}
             sleep 5
     
         - name: STG Success
-          if: inputs.phase == 'stg' && inputs.outcome == 'success' || inputs.phase == 'test'
+          if: ${{ ( inputs.phase == 'stg' && inputs.outcome == 'success' ) || inputs.phase == 'test' }}
           run: |
             curl -X POST -H 'Content-Type: application/json' -d '{"phase":"stg", "outcome":"success"}' https://maker.ifttt.com/trigger/gha_stg_success/json/with/key/${{ secrets.IFTTT }}
             sleep 5
       
         - name: PRD Fail
-          if: inputs.phase == 'prd' && inputs.outcome == 'fail' || inputs.phase == 'test'
+          if: ${{ ( inputs.phase == 'prd' && inputs.outcome == 'failure' ) || inputs.phase == 'test' }}
           run: |
             curl -X POST -H 'Content-Type: application/json' -d '{"phase":"blue", "outcome":"fail"}' https://maker.ifttt.com/trigger/gha_blue_fail/json/with/key/${{ secrets.IFTTT }}
             sleep 5
       
         - name: PRD Success
-          if: inputs.phase == 'prd' && inputs.outcome == 'success' || inputs.phase == 'test'
+          if: ${{ ( inputs.phase == 'prd' && inputs.outcome == 'success' ) || inputs.phase == 'test' }}
           run: |
             curl -X POST -H 'Content-Type: application/json' -d '{"phase":"blue", "outcome":"success"}' https://maker.ifttt.com/trigger/gha_blue_success/json/with/key/${{ secrets.IFTTT }}
             sleep 5
 
         - name: X Fail
-          if: inputs.phase == 'green' && inputs.outcome == 'fail' || inputs.phase == 'test'
+          if: ${{ ( inputs.phase == 'green' && inputs.outcome == 'failure' ) || inputs.phase == 'test' }}
           run: |
             curl -X POST -H 'Content-Type: application/json' -d '{"phase":"green", "outcome":"fail"}' https://maker.ifttt.com/trigger/gha_green_fail/json/with/key/${{ secrets.IFTTT }}
             sleep 5
         
         - name: X Success
-          if: inputs.phase == 'green' && inputs.outcome == 'success' || inputs.phase == 'test'
+          if: ${{ ( inputs.phase == 'green' && inputs.outcome == 'success' ) || inputs.phase == 'test' }}
           run: |
             curl -X POST -H 'Content-Type: application/json' -d '{"phase":"green", "outcome":"success"}' https://maker.ifttt.com/trigger/gha_green_success/json/with/key/${{ secrets.IFTTT }}
             sleep 5

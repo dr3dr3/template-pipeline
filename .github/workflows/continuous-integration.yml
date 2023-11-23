@@ -38,27 +38,23 @@ permissions:
 jobs:
 
   # Dispatch event (ci-on-main) to GitOps repo
-  dispatch-ci-on-main:
+  dispatch-cicd-start:
     name: 📨 CICD Event - Start
     timeout-minutes: 5
     runs-on: ubuntu-latest
-    env:
-      REPO: ${{ inputs.repo-gitops }}
     permissions:
       contents: none
     steps:
-      - name: Dispatch
-        uses: actions/github-script@v7
-        with:
-          github-token: ${{ secrets.CD_PAT }}
-          script: |
-            const { REPO } = process.env
-            github.rest.repos.createDispatchEvent({
-              owner: context.repo.owner,
-              repo: ${REPO},
-              event_type: 'cicd-event',
-              client_payload: {"phase": "start", "outcome": "success"}
-            });
+      - name: Dispatch CICD event
+        id: template-exists
+        run: .github/actions-scripts/create-dispatch-cicd-event.mjs
+        env:
+          GHA_TOKEN: ${{ secrets.GITOPS_PAT }}
+          REPO_OWNER: ${{ github.repository_owner }}
+          REPO_NAME: ${{ inputs.repo-gitops }}
+          EVENT_TYPE: 'cicd-event'
+          PHASE: 'start'
+          OUTCOME: 'success'
 
   set-tag:
     name: 🔖 Set Tag
@@ -91,6 +87,26 @@ jobs:
       feature: ${{ inputs.feature }}
       solution: ${{ inputs.solution }}
 
+  # Dispatch event (ci-on-main) to GitOps repo
+  dispatch-cicd-build:
+    name: 📨 CICD Event - Build
+    needs: [build]
+    timeout-minutes: 5
+    runs-on: ubuntu-latest
+    permissions:
+      contents: none
+    steps:
+      - name: Dispatch CICD event
+        id: template-exists
+        run: .github/actions-scripts/create-dispatch-cicd-event.mjs
+        env:
+          GHA_TOKEN: ${{ secrets.GITOPS_PAT }}
+          REPO_OWNER: ${{ github.repository_owner }}
+          REPO_NAME: ${{ inputs.repo-gitops }}
+          EVENT_TYPE: 'cicd-event'
+          PHASE: 'build'
+          OUTCOME: ${{ needs.build.result }}
+
   ### Pre-deployment tests on the package from build above
 
 
@@ -122,6 +138,26 @@ jobs:
       artefact-ref: ${{ needs.set-tag.outputs.tag }}
       deploy-to: ${{ inputs.deploy-to }}
     secrets: inherit
+
+  # Dispatch event (ci-on-main) to GitOps repo
+  dispatch-cicd-ci:
+    name: 📨 CICD Event - Deploy CI
+    needs: [deploy-ci]
+    timeout-minutes: 5
+    runs-on: ubuntu-latest
+    permissions:
+      contents: none
+    steps:
+      - name: Dispatch CICD event
+        id: template-exists
+        run: .github/actions-scripts/create-dispatch-cicd-event.mjs
+        env:
+          GHA_TOKEN: ${{ secrets.GITOPS_PAT }}
+          REPO_OWNER: ${{ github.repository_owner }}
+          REPO_NAME: ${{ inputs.repo-gitops }}
+          EVENT_TYPE: 'cicd-event'
+          PHASE: 'ci'
+          OUTCOME: ${{ needs.deploy-ci.result }}
 
   ### Run CI Post-Deployment Tests here
 
