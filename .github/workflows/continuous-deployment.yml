@@ -50,7 +50,7 @@ jobs:
       - name: Get Solution Repo's
         id: repos
         run: |
-          repos=$(yq '{"include": .repositories.solutions }' repositories.yml -o=json | jq -c)
+          repos=$(yq '{"include": .repositories.solutions } | select(.status == "active")' repositories.yml -o=json | jq -c)
           echo $repos
           echo "SOLUTIONS=$repos" >> $GITHUB_OUTPUT
 
@@ -63,16 +63,18 @@ jobs:
       matrix: ${{ fromJSON(needs.get-config.outputs.matrix-solutions) }}
     permissions:
       contents: none
+    env:
+      REPO: '${{ github.repository_owner }}/${{ matrix.repo }}'
 
     steps:
 
-      - name: Get Landing Pages Build Artefact
+      - name: Download latest build artifact
         run: |
-          wget $(curl -s https://api.github.com/repos/${{ github.repository_owner }}/${{ matrix.repo }}/releases/latest/  |  jq -r '.assets[] | select(.name | contains ("build")) | .browser_download_url')
+          wget $(curl -s https://api.github.com/repos/$REPO/releases/latest/  |  jq -r '.assets[] | select(.name | contains ("build")) | .browser_download_url')
           mkdir build
           tar -xzvf build.tar.gz -C build
 
-      - name: Upload Build Artifacts
+      - name: Upload build artifacts
         uses: actions/upload-artifact@v3
         with:
           name: ${{ matrix.route }}
@@ -81,7 +83,7 @@ jobs:
           retention-days: 1
 
   combine-artifacts:
-    name: Compile Build Artifacts
+    name: Compile build artifacts
     needs: [get-build-artifacts]
     timeout-minutes: 10
     runs-on: ubuntu-latest
