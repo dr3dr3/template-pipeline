@@ -14,6 +14,9 @@ on:
       solution:
         required: true
         type: string
+      soln-dir:
+        required: true
+        type: string
       site-url:
         required: true
         type: string
@@ -95,6 +98,7 @@ jobs:
       artefact-ref: ${{ needs.set-tag.outputs.tag }}
       feature: ${{ inputs.feature }}
       solution: ${{ inputs.solution }}
+      soln-dir: ${{ inputs.soln-dir }}
 
   # Dispatch event (ci-on-main) to GitOps repo
   dispatch-cicd-build:
