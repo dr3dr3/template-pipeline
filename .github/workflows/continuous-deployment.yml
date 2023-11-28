@@ -79,8 +79,8 @@ jobs:
         uses: actions/upload-artifact@v3
         with:
           name: ${{ matrix.route }}
-          # Output of build should be in _site folder
-          path: build/_site
+          # Output of build should be in dist folder
+          path: build/dist
           retention-days: 1
 
   combine-artifacts:
@@ -102,7 +102,7 @@ jobs:
           rmdir root
 
       - name: List Files
-        run: echo "$(cd _site && ls -R)" >> $GITHUB_STEP_SUMMARY
+        run: echo "$(cd dist && ls -R)" >> $GITHUB_STEP_SUMMARY
 
       # Set right SITE URL for the relevant environment
       - name: Update aboslute links for relevant environments

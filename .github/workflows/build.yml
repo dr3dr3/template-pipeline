@@ -73,30 +73,24 @@ jobs:
       - name: 🔨 Run build
         run: npm run build
 
-      - name: 🔨 Build Slidev
-        if: ${{ inputs.solution == 'SLIDEV'}}
-        env:
-          BASE: ${{ github.event.repository.name }}
-        run: npx slidev build --out _site --base /$BASE/
-
       - name: Export command needed for Featurevisor
         if: inputs.solution == 'FEATUREVISOR'
         run: npm run export
 
-      - name: Copy build output to _site folder (Landing)
+      - name: Copy build output to dist folder (Landing)
         if: inputs.solution == 'LANDING'
-        run: rsync -avh build/ _site
+        run: rsync -avh build/ dist
 
-      - name: Copy build output to _site folder (Featurevisor)
+      - name: Copy build output to dist folder (Featurevisor)
         if: inputs.solution == 'FEATUREVISOR'
-        run: rsync -avh out/ _site
+        run: rsync -avh out/ dist
 
       - name: Upload build artifacts
         uses: actions/upload-artifact@v3
         with:
           name: ${{ inputs.artefact-ref }}
-          # Output of build should be in _site folder
-          path: _site
+          # Output of build should be in dist folder
+          path: dist
           retention-days: 1
 
       - name: Build completed
