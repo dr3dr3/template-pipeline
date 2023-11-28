@@ -31,6 +31,8 @@ jobs:
     runs-on: ubuntu-latest
     permissions:
       contents: read
+    env:
+      DIR: ${{ inputs.soln-dir }}
 
     steps:
 
@@ -44,16 +46,9 @@ jobs:
         with:
           node-version: 18
         
-      - name: Change directory
-        env:
-          DIR: ${{ inputs.soln-dir }}
-        run: |
-          echo $DIR
-          cd $DIR
-
       # All static solutions should use package.json and have lint, test, build as commands
       - name: Install
-        run: npm install
+        run: cd $DIR && npm install
 
       # - name: Update BUILD-PLACEHOLDER
       #   if: inputs.solution == 'landing'
@@ -65,24 +60,24 @@ jobs:
 
       # If linting fails will fail this job
       - name: Run linter 
-        run: npm run lint
+        run: cd $DIR && npm run lint
 
       # If this tests fail the NPM error will fail this job
       - name: Run tests 
         run: |
-          npm run test
+          cd $DIR && npm run test
           echo "### Test Summary" >> $GITHUB_STEP_SUMMARY
-          echo "$(npm run test)" >> $GITHUB_STEP_SUMMARY
+          echo "$(cd $DIR && npm run test)" >> $GITHUB_STEP_SUMMARY
 
       - name: 🔨 Run build
-        run: npm run build
+        run: cd $DIR && npm run build
 
       - name: Upload build artifacts
         uses: actions/upload-artifact@v3
         with:
           name: ${{ inputs.artefact-ref }}
           # Output of build should be in dist folder
-          path: dist
+          path: ${{ join( inputs.soln-dir, '/dist') }}
           retention-days: 1
 
       - name: Build completed
