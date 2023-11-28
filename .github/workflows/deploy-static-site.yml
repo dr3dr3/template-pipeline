@@ -62,12 +62,12 @@ jobs:
         uses: actions/download-artifact@v3
         with:
           name: ${{ inputs.artefact-ref }}
-          path: _site
+          path: dist
 
       - name: Upload Pages artifacts
         uses: actions/upload-pages-artifact@v2
         with:
-          path: _site/
+          path: dist/
           
       - name: Setup Pages
         uses: actions/configure-pages@v3
@@ -102,10 +102,10 @@ jobs:
         uses: actions/download-artifact@v3
         with:
           name: ${{ inputs.artefact-ref }}
-          path: _site
+          path: dist
 
       - name: Upload to Surge.SH
-        run: npx surge ./_site --domain ${{ inputs.site-url }} --token ${{ secrets.SURGE_TOKEN }}
+        run: npx surge ./dist --domain ${{ inputs.site-url }} --token ${{ secrets.SURGE_TOKEN }}
 
       - name: Summary
         run: |
@@ -135,10 +135,10 @@ jobs:
         uses: actions/download-artifact@v3
         with:
           name: ${{ inputs.artefact-ref }}
-          path: _site
+          path: dist
       
       - name: Change Dir
-        run: cd _site
+        run: cd dist
 
       - name: Vercel Pull
         run: npx vercel pull --yes --environment=production --token=${{ secrets.VERCEL_TOKEN }}

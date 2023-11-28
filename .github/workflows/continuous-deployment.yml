@@ -147,7 +147,7 @@ jobs:
       deploy-to: ${{ inputs.deploy-to }}
       site-url: ${{ inputs.site-url }}
 
-  # Dispatch event (ci-on-main) to GitOps repo
+  # Dispatch event (cicd-event) to GitOps repo
   dispatch-cicd-ci:
     name: 📨 CICD Event - Deploy CI
     needs: [deploy-static-site]
