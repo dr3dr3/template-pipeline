@@ -77,7 +77,7 @@ jobs:
         with:
           name: ${{ inputs.artefact-ref }}
           # Output of build should be in dist folder
-          path: ${{ join( inputs.soln-dir, '/dist') }}
+          path: ${{ format( '{0}{1}', inputs.soln-dir, '/dist' ) }}
           retention-days: 1
 
       - name: Build completed
