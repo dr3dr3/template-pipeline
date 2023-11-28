@@ -70,8 +70,8 @@ jobs:
         env:
           REPO: '${{ github.repository_owner }}/${{ matrix.repo }}'
         run: |
-          echo 'https://api.github.com/repos/$REPO/releases/latest'
-          wget $(curl -s https://api.github.com/repos/$REPO/releases/latest  |  jq -r '.assets[] | select(.name | contains ("build")) | .browser_download_url')
+          echo "https://api.github.com/repos/$REPO/releases/latest"
+          wget $(curl -s "https://api.github.com/repos/$REPO/releases/latest"  |  jq -r '.assets[] | select(.name | contains ("build")) | .browser_download_url')
           mkdir build
           tar -xzvf build.tar.gz -C build
 
