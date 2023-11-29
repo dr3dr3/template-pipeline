@@ -74,6 +74,9 @@ jobs:
           mkdir build
           tar -xzvf build.tar.gz -C build
 
+      - name: List Files
+        run: ls -R
+
       - name: Upload build artifacts
         if: ${{ matrix.status == 'active' }}
         uses: actions/upload-artifact@v3
@@ -96,7 +99,7 @@ jobs:
         uses: actions/download-artifact@v3
 
       - name: List Files
-        run: echo "$(ls -R)" >> $GITHUB_STEP_SUMMARY
+        run: echo "$(ls)" >> $GITHUB_STEP_SUMMARY
 
       - name: Move Root Route
         run: |

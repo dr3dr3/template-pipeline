@@ -36,10 +36,10 @@ jobs:
         uses: actions/download-artifact@v3
         with:
           name: ${{ inputs.tag }}
-          path: _site
+          path: deploy-artifact
 
       - name: Bundle Artefacts
-        run: tar -cvzf build.tar.gz _site
+        run: tar -cvzf build.tar.gz deploy-artifact
       
       - name: Do GitHub Release
         run: gh release create "${{ inputs.tag }}" "./build.tar.gz#Build-Artefact" --target "${{ inputs.target-ref }}" --title "${{ inputs.tag }}" --notes "${{ inputs.feature }}"
