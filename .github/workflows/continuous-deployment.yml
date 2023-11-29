@@ -97,13 +97,13 @@ jobs:
       - name: Download all artifacts
         uses: actions/download-artifact@v3
 
+      - name: List Files
+        run: echo "$(cd dist && ls -R)" >> $GITHUB_STEP_SUMMARY
+
       - name: Move Root Route
         run: |
           mv root/**  ./
           rmdir root
-
-      - name: List Files
-        run: echo "$(cd dist && ls -R)" >> $GITHUB_STEP_SUMMARY
 
       # Set right SITE URL for the relevant environment
       - name: Update aboslute links for relevant environments
