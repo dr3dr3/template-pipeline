@@ -103,6 +103,9 @@ jobs:
           mv root/**  ./
           rmdir root
 
+      - name: List Files
+        run: echo "$(ls -R)" >> $GITHUB_STEP_SUMMARY
+
       # Set right SITE URL for the relevant environment
       - name: Update aboslute links for relevant environments
         run: grep -rl localhost . | xargs sed -i 's@http://localhost@https://${{ inputs.site-url }}@g'
