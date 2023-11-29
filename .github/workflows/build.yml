@@ -12,9 +12,12 @@ on:
       feature:
         required: true
         type: string
+      site-url:
+        required: true
+        type: string
       solution:
-          required: true
-          type: string
+        required: true
+        type: string
       soln-dir:
         required: true
         type: string
@@ -74,6 +77,8 @@ jobs:
           echo "$(cd $SOLN_DIR && npm run test)" >> $GITHUB_STEP_SUMMARY
 
       - name: 🔨 Run build
+        env:
+          SITE_URL: ${{ inputs.site-url }}
         run: cd $SOLN_DIR && npm run build
 
       - name: Upload build artifacts
