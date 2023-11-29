@@ -109,9 +109,9 @@ jobs:
       - name: List Files
         run: echo "$(ls -R)" >> $GITHUB_STEP_SUMMARY
 
-      # Set right SITE URL for the relevant environment
-      - name: Update aboslute links for relevant environments
-        run: grep -rl localhost . | xargs sed -i 's@http://localhost@https://${{ inputs.site-url }}@g'
+      # # Set right SITE URL for the relevant environment
+      # - name: Update aboslute links for relevant environments
+      #   run: grep -rl localhost . | xargs sed -i 's@http://localhost@https://${{ inputs.site-url }}@g'
 
       # # Set right URL for featurevisor feature flags service
       # - name: Update links to feature flags
