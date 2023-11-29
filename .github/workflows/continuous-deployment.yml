@@ -82,7 +82,7 @@ jobs:
         uses: actions/upload-artifact@v3
         with:
           name: ${{ matrix.route }}
-          path: build
+          path: build/_site
           retention-days: 1
 
   combine-artifacts:
