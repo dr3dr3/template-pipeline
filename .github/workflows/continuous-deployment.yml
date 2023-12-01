@@ -148,6 +148,8 @@ jobs:
       id-token: write
     secrets: inherit
     with:
+      target-deploy: ${{ inputs.target-deploy }}
+      target-purpose: ${{ inputs.blue-green }}
       artefact-ref: ${{ format('{0}-{1}', 'RC', github.run_id ) }}
       deploy-to: ${{ inputs.deploy-to }}
       site-url: ${{ inputs.site-url }}

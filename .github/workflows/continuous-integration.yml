@@ -162,6 +162,8 @@ jobs:
       pages: write
       id-token: write
     with:
+      target-deploy: 'ci'
+      target-purpose: 'quality'
       artefact-ref: ${{ needs.set-tag.outputs.tag }}
       deploy-to: ${{ inputs.deploy-to }}
     secrets: inherit
