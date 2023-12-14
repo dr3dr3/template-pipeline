@@ -7,6 +7,9 @@ on:
       target-deploy:
         required: true
         type: string
+      soln-group:
+        required: true
+        type: string
       site-url:
         required: true
         type: string
@@ -27,7 +30,7 @@ permissions:
   contents: read
   pages: write
   id-token: write
-    
+
 jobs:
 
   get-config:
@@ -50,7 +53,8 @@ jobs:
       - name: Get Solution Repo's
         id: repos
         run: |
-          repos=$(yq '{"include": .repositories.solutions }' repositories.yml -o=json | jq -c)
+          filter=$(yq '.repositories.solutions | filter(.groups[] == "${{ inputs.soln-group || 'default' }}" )' repo/repositories.yml -o=json | jq -c)
+          vars="{\"include\": $filter }"
           echo $repos
           echo "SOLUTIONS=$repos" >> $GITHUB_OUTPUT
 

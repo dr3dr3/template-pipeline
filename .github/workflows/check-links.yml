@@ -53,9 +53,9 @@ jobs:
           SITE_URL: ${{ inputs.site-url }}
         run: |
           echo "### ✅ Check: Hyperlinks using Linkinator" >> $GITHUB_STEP_SUMMARY
-          npx linkinator "$SITE_URL" --config "./config/linkinator.config.json"
-          echo $(npx linkinator "$SITE_URL" --config "./config/linkinator.config.json") >> $GITHUB_STEP_SUMMARY
-          echo $(npx linkinator "$SITE_URL" --config "./config/linkinator.config.json") >> links-html.json
+          npx linkinator "$SITE_URL" --config "./quality/linkinator.config.json"
+          echo $(npx linkinator "$SITE_URL" --config "./quality/linkinator.config.json") >> $GITHUB_STEP_SUMMARY
+          echo $(npx linkinator "$SITE_URL" --config "./quality/linkinator.config.json") >> links-html.json
           echo 'RESULT='$(jq '.passed' links-html.json) >> $GITHUB_OUTPUT
 
       - name: Fail workflow
