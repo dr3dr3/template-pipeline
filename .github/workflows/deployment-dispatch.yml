@@ -73,5 +73,5 @@ jobs:
           curl -H "Accept: application/vnd.github.everest-preview+json" \
           -H "Authorization: token $GHA_TOKEN" \
           --request POST --data '{"event_type": "deploy", "client_payload": {"blue-green": "${{ inputs.blue-green }}"}}' \
-          https://api.github.com/repos/$REPO_OWNER/$REPO_NAME/dispatches
+          https://api.github.com/repos/${REPO_OWNER}/${REPO_NAME}/dispatches
       
