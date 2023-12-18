@@ -67,11 +67,10 @@ jobs:
       - name: Dispatch
         env:
           GHA_TOKEN: ${{ secrets.CD_PAT }}
-          REPO_OWNER: ${{ github.repository_owner }}
-          REPO_NAME: ${{ inputs.target-repo }}
+          TARGET_REPO: ${{ inputs.target-repo }}
         run: |
           curl -H "Accept: application/vnd.github.everest-preview+json" \
           -H "Authorization: token ${{ env.GHA_TOKEN }}" \
           --request POST --data '{"event_type": "deploy", "client_payload": {"blue-green": "${{ inputs.blue-green }}"}}' \
-          https://api.github.com/repos/${{ env.REPO_OWNER }}/${{ env.REPO_NAME }}/dispatches
+          https://api.github.com/repos/${{ env.TARGET_REPO }}/dispatches
       
