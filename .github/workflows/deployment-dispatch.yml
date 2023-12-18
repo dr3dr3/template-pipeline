@@ -66,7 +66,7 @@ jobs:
 
       - name: Dispatch
         env:
-          GHA_TOKEN: ${{ secrets.GITOPS_PAT }}
+          GHA_TOKEN: ${{ secrets.CD_PAT }}
           REPO_OWNER: ${{ github.repository_owner }}
           REPO_NAME: ${{ inputs.target-repo }}
         run: |
