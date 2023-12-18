@@ -65,11 +65,8 @@ jobs:
     steps:
 
       - name: Dispatch
-        run: |
-          curl -H "Accept: application/vnd.github.everest-preview+json" \
-          -H "Authorization: token ${{ secrets.CD_PAT }}" \
-          --request POST --data '{"event_type": "deploy", "client_payload": {"blue-green": "${{ inputs.blue-green }}"}}' \
-          https://api.github.com/repos/${{ inputs.target-repo }}/dispatches
-          echo "Success"
-      
-      ### Todo: Any value in adding client_payload
+        run: .github/actions-scripts/send-repository-dispatch.mjs
+        env:
+          GHA_TOKEN: ${{ secrets.GITOPS_PAT }}
+          REPO_OWNER: ${{ github.repository_owner }}
+          REPO_NAME: ${{ inputs.target-repo }}

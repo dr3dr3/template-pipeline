@@ -117,9 +117,10 @@ jobs:
       # - name: Update aboslute links for relevant environments
       #   run: grep -rl localhost . | xargs sed -i 's@http://localhost@https://${{ inputs.site-url }}@g'
 
-      # # Set right URL for featurevisor feature flags service
+      # Set right URL for featurevisor feature flags service
       # - name: Update links to feature flags
-      #   run: grep -rl datafile-tag-all.json . | xargs sed -i 's@datafiles/ci/datafile-tag-all.json@datafiles/${{ inputs.target-deploy }}/datafile-tag-all.json@g'
+      #   if: ${{ inputs.soln-group != 'feature-flags' }}
+      #   run: grep -rl datafile-tag-all.json . | xargs sed -i 's@datafiles/ci/datafile-tag-all.json@datafiles/${{ inputs.target-deploy }}/datafile-tag-${{ inputs.blue-green }}.json@g'
 
       # # Set whether deployment is blue/green
       # - name: Update DEPLOY-BLUE-GREEN
