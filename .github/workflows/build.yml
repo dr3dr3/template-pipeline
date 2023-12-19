@@ -79,6 +79,7 @@ jobs:
       - name: 🔨 Run build
         env:
           SITE_URL: ${{ inputs.site-url }}
+          NEXT_PUBLIC_FF_URL: https://dr3dr3.github.io/template-featurevisor/datafiles/ci/datafile-tag-all.json
         run: cd $SOLN_DIR && npm run build
 
       - name: Upload build artifacts
