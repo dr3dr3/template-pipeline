@@ -5,6 +5,9 @@ on:
 
   workflow_call:
     inputs:
+      soln-group:
+        required: true
+        type: string
       blue-green:
         required: true
         type: string
@@ -71,6 +74,6 @@ jobs:
         run: |
           curl -H "Accept: application/vnd.github.everest-preview+json" \
           -H "Authorization: token ${{ env.GHA_TOKEN }}" \
-          --request POST --data '{"event_type": "deploy", "client_payload": {"blue-green": "${{ inputs.blue-green }}"}}' \
+          --request POST --data '{"event_type": "deploy", "client_payload": {"blue-green": "${{ inputs.blue-green }}", "soln-group": "${{ inputs.soln-group }}"}}' \
           https://api.github.com/repos/${{ env.TARGET_REPO }}/dispatches
       

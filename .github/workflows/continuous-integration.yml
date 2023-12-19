@@ -14,6 +14,9 @@ on:
       solution:
         required: true
         type: string
+      soln-group:
+        required: true
+        type: string
       soln-dir:
         required: true
         type: string
@@ -220,6 +223,7 @@ jobs:
     permissions:
       contents: write
     with:
+      soln-group: ${{ inputs.soln-group }}
       blue-green: 'blue'
       target-repo: ${{ inputs.repo-stage }}
     secrets: inherit
