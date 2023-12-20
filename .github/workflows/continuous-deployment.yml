@@ -53,6 +53,7 @@ jobs:
       - name: Get Solution Repo's
         id: repos
         run: |
+          ls
           filter=$(yq '.repositories.solutions | filter(.groups[] == "${{ inputs.soln-group || 'default' }}" )' repo/repositories.yml -o=json | jq -c)
           repos="{\"include\": $filter }"
           echo $repos
