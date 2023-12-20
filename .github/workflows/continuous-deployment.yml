@@ -54,10 +54,6 @@ jobs:
         id: repos
         run: |
           filter=$(yq '.repositories.solutions | filter(.groups[] == "${{ inputs.soln-group || 'default' }}" )' repo/repositories.yml -o=json | jq -c)
-          if (filter == []) ; then
-            echo "No solutions in filtered results"
-            exit 1
-          fi
           repos="{\"include\": $filter }"
           echo $repos
           echo "SOLUTIONS=$repos" >> $GITHUB_OUTPUT
