@@ -53,9 +53,8 @@ jobs:
       - name: Get Solution Repo's
         id: repos
         run: |
-          ls
           filter=$(yq '.repositories.solutions | filter(.groups[] == "${{ inputs.soln-group || 'default' }}" )' repo/repositories.yml -o=json | jq -c)
-          if (filter.length == 0) ; then
+          if (filter == []) ; then
             echo "No solutions in filtered results"
             exit 1
           fi
