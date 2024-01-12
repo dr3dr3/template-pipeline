@@ -55,7 +55,7 @@ jobs:
         
       # All static solutions should use package.json and have lint, test, build as commands
       - name: Install
-        run: cd $SOLN_DIR && npm install
+        run: npm install
 
       # - name: Update BUILD-PLACEHOLDER
       #   if: inputs.solution == 'landing'
@@ -67,21 +67,21 @@ jobs:
 
       # If linting fails will fail this job
       - name: Run linter 
-        run: cd $SOLN_DIR && npm run lint
+        run: npm run lint
 
       # If this tests fail the NPM error will fail this job
       - name: Run tests 
         run: |
-          cd $SOLN_DIR && npm run test
+          npm run test
           echo "### Test Summary" >> $GITHUB_STEP_SUMMARY
-          echo "$(cd $SOLN_DIR && npm run test)" >> $GITHUB_STEP_SUMMARY
+          echo "$(npm run test)" >> $GITHUB_STEP_SUMMARY
 
       - name: 🔨 Run build
         env:
           SITE_URL: ${{ inputs.site-url }}
           REPO_PROD: 'dr3dr3/template-deployment'
           NEXT_PUBLIC_FF_URL: https://dr3dr3.github.io/template-featurevisor/datafiles/ci/datafile-tag-all.json
-        run: cd $SOLN_DIR && npm run build
+        run: npm run build
 
       - name: Upload build artifacts
         uses: actions/upload-artifact@v3
