@@ -18,9 +18,6 @@ on:
       solution:
         required: true
         type: string
-      soln-dir:
-        required: true
-        type: string
       output-dir:
         required: true
         type: string
@@ -38,7 +35,6 @@ jobs:
     permissions:
       contents: read
     env:
-      SOLN_DIR: ${{ inputs.soln-dir }}
       OUTPUT_DIR: ${{ inputs.output-dir }}
 
     steps:
@@ -88,7 +84,7 @@ jobs:
         with:
           name: ${{ inputs.artefact-ref }}
           # Output of build should be in dist folder
-          path: ${{ format( '{0}{1}{2}', inputs.soln-dir, '/', inputs.output-dir ) }}
+          path: ${{ inputs.output-dir }}
           retention-days: 1
 
       - name: Build completed

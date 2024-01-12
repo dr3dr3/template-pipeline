@@ -17,9 +17,6 @@ on:
       soln-group:
         required: true
         type: string
-      soln-dir:
-        required: true
-        type: string
       output-dir:
         required: true
         type: string
@@ -105,7 +102,6 @@ jobs:
       feature: ${{ inputs.feature }}
       site-url: ${{ inputs.site-url }}
       solution: ${{ inputs.solution }}
-      soln-dir: ${{ inputs.soln-dir }}
       output-dir: ${{ inputs.output-dir }}
 
   # Dispatch event (ci-on-main) to GitOps repo
