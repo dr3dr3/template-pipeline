@@ -47,7 +47,7 @@ jobs:
       - name: Setup Node.JS
         uses: actions/setup-node@v4
         with:
-          node-version: 20
+          node-version: latest
         
       # All static solutions should use package.json and have lint, test, build as commands
       - name: Install
