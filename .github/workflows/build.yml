@@ -40,14 +40,14 @@ jobs:
     steps:
 
       - name: Checkout Soln Repo
-        uses: actions/checkout@v3
+        uses: actions/checkout@v4
         with:
           ref: ${{ inputs.target-ref }}
 
       - name: Setup Node.JS
-        uses: actions/setup-node@v3
+        uses: actions/setup-node@v4
         with:
-          node-version: 18
+          node-version: 20
         
       # All static solutions should use package.json and have lint, test, build as commands
       - name: Install
@@ -80,7 +80,7 @@ jobs:
         run: npm run build
 
       - name: Upload build artifacts
-        uses: actions/upload-artifact@v3
+        uses: actions/upload-artifact@v4
         with:
           name: ${{ inputs.artefact-ref }}
           # Output of build should be in dist folder

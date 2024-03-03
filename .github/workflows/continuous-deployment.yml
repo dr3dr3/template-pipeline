@@ -83,7 +83,7 @@ jobs:
 
       - name: Upload build artifacts
         if: ${{ matrix.status == 'active' }}
-        uses: actions/upload-artifact@v3
+        uses: actions/upload-artifact@v4
         with:
           name: ${{ matrix.route }}
           path: build/_site
@@ -100,7 +100,7 @@ jobs:
     steps:
     
       - name: Download all artifacts
-        uses: actions/download-artifact@v3
+        uses: actions/download-artifact@v4
 
       - name: List Files
         run: echo "$(ls)" >> $GITHUB_STEP_SUMMARY
@@ -132,7 +132,7 @@ jobs:
 
       # Upload deployable artifact for combined static site
       - name: Upload Build Artifacts
-        uses: actions/upload-artifact@v3
+        uses: actions/upload-artifact@v4
         with:
           name: ${{ format('{0}-{1}', 'RC', github.run_id ) }}
           path: .
