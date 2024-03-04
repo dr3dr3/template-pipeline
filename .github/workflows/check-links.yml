@@ -38,7 +38,7 @@ jobs:
         if: ${{ inputs.toggle == 'true' }}
         uses: actions/setup-node@v4
         with:
-          node-version: latest
+          node-version: 20
 
       # https://github.com/JustinBeckwith/linkinator
       - name: Install Linkinator
