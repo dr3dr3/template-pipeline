@@ -38,6 +38,9 @@ on:
       repo-gitops:
         required: true
         type: string
+      build-ff-url:
+        required: true
+        type: string
 
 permissions:
   contents: write
@@ -107,6 +110,7 @@ jobs:
       solution: ${{ inputs.solution }}
       output-dir: ${{ inputs.output-dir }}
       repo-prod: ${{ inputs.repo-prod }}
+      build-ff-url: ${{ inputs.build-ff-url }}
 
   # Dispatch event (ci-on-main) to GitOps repo
   dispatch-cicd-build:

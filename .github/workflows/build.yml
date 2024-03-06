@@ -24,6 +24,9 @@ on:
       repo-prod:
         required: true
         type: string
+      build-ff-url:
+        required: true
+        type: string
     
 permissions:
   contents: read
@@ -79,7 +82,7 @@ jobs:
         env:
           SITE_URL: ${{ inputs.site-url }}
           REPO_PROD: ${{ inputs.repo-prod }} // used to get DORA metrics in Next.JS
-          NEXT_PUBLIC_FF_URL: https://dr3dr3.github.io/template-featurevisor/datafiles/ci/datafile-tag-all.json
+          BUILD_FF_URL: ${{ inputs.build-ff-url }} // used for feature flags in build phase (i.e. SSG in Next.JS)
         run: npm run build
 
       - name: Upload build artifacts
