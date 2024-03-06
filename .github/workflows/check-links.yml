@@ -32,7 +32,7 @@ jobs:
         with:
           repository: ${{ inputs.repo-gitops }}
           ref: 'main'
-          token: ${{ secrets.CD_PAT }}
+          token: ${{ secrets.PIPELINE_PAT }}
 
       - name: Setup Node.JS
         if: ${{ inputs.toggle == 'true' }}

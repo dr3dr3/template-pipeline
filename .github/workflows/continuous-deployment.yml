@@ -48,7 +48,7 @@ jobs:
         with:
           repository: ${{ inputs.repo-gitops }}
           ref: 'main'
-          token: ${{ secrets.CD_PAT }}
+          token: ${{ secrets.PIPELINE_PAT }}
 
       - name: Get Solution Repo's
         id: repos
@@ -176,7 +176,7 @@ jobs:
           PHASE: ${{ inputs.target-deploy }}
           OUTCOME: ${{ needs.deploy-static-site.result }}
         with:
-          github-token: ${{ secrets.CD_PAT }}
+          github-token: ${{ secrets.PIPELINE_PAT }}
           script: |
             const { OWNER, REPO_GITOPS, PHASE, OUTCOME } = process.env
             const repo = /[^/]*$/.exec(`${REPO_GITOPS}`)[0];

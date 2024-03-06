@@ -69,7 +69,7 @@ jobs:
 
       - name: Dispatch
         env:
-          GHA_TOKEN: ${{ secrets.CD_PAT }}
+          GHA_TOKEN: ${{ secrets.PIPELINE_PAT }}
           TARGET_REPO: ${{ inputs.target-repo }}
         run: |
           curl -H "Accept: application/vnd.github.everest-preview+json" \

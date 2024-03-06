@@ -32,6 +32,9 @@ on:
       repo-stage:
         required: true
         type: string
+      repo-prod:
+        required: true
+        type: string
       repo-gitops:
         required: true
         type: string
@@ -59,7 +62,7 @@ jobs:
           PHASE: 'start'
           OUTCOME: 'success'
         with:
-          github-token: ${{ secrets.CD_PAT }}
+          github-token: ${{ secrets.PIPELINE_PAT }}
           script: |
             const { OWNER, REPO_GITOPS, PHASE, OUTCOME } = process.env
             const repo = /[^/]*$/.exec(`${REPO_GITOPS}`)[0];
@@ -103,6 +106,7 @@ jobs:
       site-url: ${{ inputs.site-url }}
       solution: ${{ inputs.solution }}
       output-dir: ${{ inputs.output-dir }}
+      repo-prod: ${{ inputs.repo-prod }}
 
   # Dispatch event (ci-on-main) to GitOps repo
   dispatch-cicd-build:
@@ -121,7 +125,7 @@ jobs:
           PHASE: 'build'
           OUTCOME: ${{ needs.build.result }}
         with:
-          github-token: ${{ secrets.CD_PAT }}
+          github-token: ${{ secrets.PIPELINE_PAT }}
           script: |
             const { OWNER, REPO_GITOPS, PHASE, OUTCOME } = process.env
             const repo = /[^/]*$/.exec(`${REPO_GITOPS}`)[0];
@@ -184,7 +188,7 @@ jobs:
           PHASE: 'ci'
           OUTCOME: ${{ needs.deploy-ci.result }}
         with:
-          github-token: ${{ secrets.CD_PAT }}
+          github-token: ${{ secrets.PIPELINE_PAT }}
           script: |
             const { OWNER, REPO_GITOPS, PHASE, OUTCOME } = process.env
             const repo = /[^/]*$/.exec(`${REPO_GITOPS}`)[0];

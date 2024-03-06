@@ -21,6 +21,9 @@ on:
       output-dir:
         required: true
         type: string
+      repo-prod:
+        required: true
+        type: string
     
 permissions:
   contents: read
@@ -75,7 +78,7 @@ jobs:
       - name: 🔨 Run build
         env:
           SITE_URL: ${{ inputs.site-url }}
-          REPO_PROD: 'dr3dr3/template-deployment'
+          REPO_PROD: ${{ inputs.repo-prod }} // used to get DORA metrics in Next.JS
           NEXT_PUBLIC_FF_URL: https://dr3dr3.github.io/template-featurevisor/datafiles/ci/datafile-tag-all.json
         run: npm run build
 
